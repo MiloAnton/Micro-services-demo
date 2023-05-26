@@ -1,87 +1,116 @@
-const express = require('express');
-const bodyParser = require('body-parser');
+const express = require("express");
+const bodyParser = require("body-parser");
+const sqlite3 = require("sqlite3").verbose();
 
 const app = express();
 
 app.use(bodyParser.json());
 
-let authors = [
-    {
-        id: 1,
-        name: 'F. Scott Fitzgerald'
-    },
-    {
-        id: 2,
-        name: 'John Steinbeck'
-    },
-    {
-        id: 3,
-        name: 'J. D. Salinger'
-    }
-];
+// Création de la base de données et de la table authors
+let db = new sqlite3.Database("./authors.db", (err) => {
+  if (err) {
+    console.error(err.message);
+  }
+  console.log("Connected to the authors database.");
 
-app.get('/authors', (req, res) => {
-    try {
-        res.json(authors);
-    } catch (error) {
-        res.status(500).send(error);
+  db.run(
+    `CREATE TABLE IF NOT EXISTS authors(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE
+  )`,
+    (err) => {
+      if (err) {
+        console.error(err.message);
+      }
+      console.log("Authors table created.");
+
+      // Insertion de quelques auteurs pour tester
+      const authors = [
+        { name: "F. Scott Fitzgerald" },
+        { name: "John Steinbeck" },
+        { name: "J. D. Salinger" },
+        { name: "Jane Austen" },
+        { name: "Mark Twain" },
+      ];
+
+      const stmt = db.prepare("INSERT INTO authors(name) VALUES(?)");
+      for (const author of authors) {
+        stmt.run(author.name, function (err) {
+          if (err) {
+            console.error(err.message);
+          } else {
+            console.log(`Author added with ID: ${this.lastID}`);
+          }
+        });
+      }
+      stmt.finalize();
     }
+  );
 });
 
-app.get('/authors/:id', (req, res) => {
-    try {
-        const author = authors.find(author => author.id === Number(req.params.id));
-        if (!author) {
-            res.status(404).send('Author not found');
-        } else {
-            res.json(author);
-        }
-    } catch (error) {
-        res.status(500).send(error);
+app.get("/authors", (req, res) => {
+  db.all("SELECT * FROM authors", [], (err, rows) => {
+    if (err) {
+      res.status(500).send(err);
+    } else {
+      res.json(rows);
     }
+  });
 });
 
-app.post('/authors', (req, res) => {
-    try {
-        const author = req.body;
-        authors.push(author);
-        res.status(201).json(author);
-    } catch (error) {
-        res.status(500).send(error);
+app.get("/authors/:id", (req, res) => {
+  db.get("SELECT * FROM authors WHERE id = ?", [req.params.id], (err, row) => {
+    if (err) {
+      res.status(500).send(err);
+    } else if (!row) {
+      res.status(404).send("Author not found");
+    } else {
+      res.json(row);
     }
+  });
 });
 
-app.put('/authors/:id', (req, res) => {
-    try {
-        const author = req.body;
-        const index = authors.findIndex(author => author.id === Number(req.params.id));
-        if (index === -1) {
-            res.status(404).send('Author not found');
-        } else {
-            authors[index] = author;
-            res.json(author);
-        }
-    } catch (error) {
-        res.status(500).send(error);
+app.post("/authors", (req, res) => {
+  const { name } = req.body;
+  db.run("INSERT INTO authors(name) VALUES(?)", [name], function (err) {
+    if (err) {
+      res.status(500).send(err);
+    } else {
+      res.status(201).json({ id: this.lastID, name });
     }
+  });
 });
 
-app.delete('/authors/:id', (req, res) => {
-    try {
-        const authorId = Number(req.params.id);
-        const index = authors.findIndex(author => author.id === authorId);
-        if (index === -1) {
-            res.status(404).send('Author not found');
-        } else {
-            authors = authors.filter(author => author.id !== authorId);
-            res.json(authors);
-        }
-    } catch (error) {
-        res.status(500).send(error);
+app.put("/authors/:id", (req, res) => {
+  const { name } = req.body;
+  db.run(
+    "UPDATE authors SET name = ? WHERE id = ?",
+    [name, req.params.id],
+    function (err) {
+      if (err) {
+        res.status(500).send(err);
+      } else if (this.changes === 0) {
+        res.status(404).send("Author not found");
+      } else {
+        res.json({ id: req.params.id, name });
+      }
     }
+  );
+});
+
+app.delete("/authors/:id", (req, res) => {
+  db.run("DELETE FROM authors WHERE id = ?", [req.params.id], function (err) {
+    if (err) {
+      res.status(500).send(err);
+    } else if (this.changes === 0) {
+      res.status(404).send("Author not found");
+    } else {
+      res.json({ message: "Author deleted" });
+    }
+  });
 });
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
-    console.log(`Authors service listening on port ${PORT}`);
+  console.log(`Authors service listening on port ${PORT}`);
 });

@@ -1,93 +1,160 @@
-const express = require('express');
-const bodyParser = require('body-parser');
+const express = require("express");
+const bodyParser = require("body-parser");
+const sqlite3 = require("sqlite3").verbose();
 
 const app = express();
 
 app.use(bodyParser.json());
 
-let books = [
-    {
-        id: 1,
-        title: 'The Great Gatsby',
-        authorId: 1,
-        categoryId: 1
-    },
-    {
-        id: 2,
-        title: 'The Grapes of Wrath',
-        authorId: 2,
-        categoryId: 2
-    },
-    {
-        id: 3,
-        title: 'The Catcher in the Rye',
-        authorId: 3,
-        categoryId: 3
-    }
-];
+// Création de la base de données et de la table books
+let db = new sqlite3.Database("./books.db", (err) => {
+  if (err) {
+    console.error(err.message);
+  }
+  console.log("Connected to the books database.");
 
-app.get('/books', (req, res) => {
-    try {
-        res.json(books);
-    } catch (error) {
-        res.status(500).send(error);
+  db.run(
+    `CREATE TABLE IF NOT EXISTS books(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    authorId INTEGER NOT NULL,
+    categoryId INTEGER NOT NULL
+  )`,
+    (err) => {
+      if (err) {
+        console.error(err.message);
+      }
+      console.log("Books table created.");
+
+      // Insertion de quelques livres pour tester
+      const books = [
+        { title: "The Great Gatsby", authorId: 1, categoryId: 1 },
+        { title: "The Grapes of Wrath", authorId: 2, categoryId: 2 },
+        { title: "The Catcher in the Rye", authorId: 3, categoryId: 3 },
+        { title: "To Kill a Mockingbird", authorId: 4, categoryId: 4 },
+        { title: "The Color Purple", authorId: 5, categoryId: 5 },
+        { title: "Beloved", authorId: 6, categoryId: 6 },
+        { title: "The Lord of the Rings", authorId: 7, categoryId: 7 },
+      ];
+
+      const stmt = db.prepare(
+        "INSERT INTO books(title, authorId, categoryId) VALUES(?, ?, ?)"
+      );
+      for (const book of books) {
+        stmt.run(book.title, book.authorId, book.categoryId, function (err) {
+          if (err) {
+            console.error(err.message);
+          } else {
+            console.log(`Book added with ID: ${this.lastID}`);
+          }
+        });
+      }
+      stmt.finalize();
     }
+  );
 });
 
-app.get('/books/:id', (req, res) => {
-    try {
-        const book = books.find(book => book.id === Number(req.params.id));
-        if (!book) {
-            res.status(404).send('Book not found');
-        } else {
-            res.json(book);
-        }
-    } catch (error) {
-        res.status(500).send(error);
+app.get("/books", (req, res) => {
+  db.all("SELECT * FROM books", [], (err, rows) => {
+    if (err) {
+      res.status(500).send(err);
+    } else {
+      res.json(rows);
     }
+  });
 });
 
-app.post('/books', (req, res) => {
-    try {
-        const book = req.body;
-        books.push(book);
-        res.status(201).json(book);
-    } catch (error) {
-        res.status(500).send(error);
+app.get("/books/:id", (req, res) => {
+  db.get("SELECT * FROM books WHERE id = ?", [req.params.id], (err, row) => {
+    if (err) {
+      res.status(500).send(err);
+    } else if (!row) {
+      res.status(404).send("Book not found");
+    } else {
+      res.json(row);
     }
+  });
 });
 
-app.put('/books/:id', (req, res) => {
-    try {
-        const book = req.body;
-        const index = books.findIndex(book => book.id === Number(req.params.id));
-        if (index === -1) {
-            res.status(404).send('Book not found');
-        } else {
-            books[index] = book;
-            res.json(book);
-        }
-    } catch (error) {
-        res.status(500).send(error);
+app.post("/books", (req, res) => {
+  const { title, authorId, categoryId } = req.body;
+  db.run(
+    "INSERT INTO books(title, authorId, categoryId) VALUES(?, ?, ?)",
+    [title, authorId, categoryId],
+    function (err) {
+      if (err) {
+        res.status(500).send(err);
+      } else {
+        res.status(201).json({ id: this.lastID, title, authorId, categoryId });
+      }
     }
+  );
 });
 
-app.delete('/books/:id', (req, res) => {
-    try {
-        const bookId = Number(req.params.id);
-        const index = books.findIndex(book => book.id === bookId);
-        if (index === -1) {
-            res.status(404).send('Book not found');
-        } else {
-            books = books.filter(book => book.id !== bookId);
-            res.json(books);
-        }
-    } catch (error) {
-        res.status(500).send(error);
+app.put("/books/:id", (req, res) => {
+  const { title, authorId, categoryId } = req.body;
+  db.run(
+    "UPDATE books SET title = ?, authorId = ?, categoryId = ? WHERE id = ?",
+    [title, authorId, categoryId, req.params.id],
+    function (err) {
+      if (err) {
+        res.status(500).send(err);
+      } else if (this.changes === 0) {
+        res.status(404).send("Book not found");
+      } else {
+        res.json({ id: req.params.id, title, authorId, categoryId });
+      }
     }
+  );
+});
+
+app.delete("/books/:id", (req, res) => {
+  db.run("DELETE FROM books WHERE id = ?", [req.params.id], function (err) {
+    if (err) {
+      res.status(500).send(err);
+    } else if (this.changes === 0) {
+      res.status(404).send("Book not found");
+    } else {
+      res.json({ message: "Book deleted" });
+    }
+  });
+});
+
+// Récupérer tous les livres d'un auteur spécifique
+app.get("/books/author/:authorId", (req, res) => {
+  db.all(
+    "SELECT * FROM books WHERE authorId = ?",
+    [req.params.authorId],
+    (err, rows) => {
+      if (err) {
+        res.status(500).send(err);
+      } else if (rows.length === 0) {
+        res.status(404).send("No books found for this author");
+      } else {
+        res.json(rows);
+      }
+    }
+  );
+});
+
+// Récupérer tous les livres d'une catégorie spécifique
+app.get("/books/category/:categoryId", (req, res) => {
+  db.all(
+    "SELECT * FROM books WHERE categoryId = ?",
+    [req.params.categoryId],
+    (err, rows) => {
+      if (err) {
+        res.status(500).send(err);
+      } else if (rows.length === 0) {
+        res.status(404).send("No books found in this category");
+      } else {
+        res.json(rows);
+      }
+    }
+  );
 });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`Books service listening on port ${PORT}`);
+  console.log(`Books service listening on port ${PORT}`);
 });
