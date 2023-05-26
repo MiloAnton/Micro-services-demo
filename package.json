@@ -7,6 +7,8 @@
     "start-authors": "node authors/authors.service.js",
     "start-categories": "node categories/categories.service.js",
     "start-books": "node books/books.service.js",
+    "start-reviews": "node reviews/reviews.service.js",
+    "start-users": "node users/users.service.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -15,5 +17,6 @@
     "axios": "^1.4.0",
     "body-parser": "^1.20.2",
     "express": "^4.18.2"
-  }
+  },
+  "devDependencies": {}
 }
