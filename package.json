@@ -1,0 +1,19 @@
+{
+  "name": "micro-services-tp",
+  "version": "1.0.0",
+  "description": "CRUD ## Authors CRUD ## Categories CRUD",
+  "main": "index.js",
+  "scripts": {
+    "start-authors": "node authors/authors.service.js",
+    "start-categories": "node categories/categories.service.js",
+    "start-books": "node books/books.service.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.4.0",
+    "body-parser": "^1.20.2",
+    "express": "^4.18.2"
+  }
+}
