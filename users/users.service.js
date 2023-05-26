@@ -116,3 +116,5 @@ const PORT = process.env.PORT || 7000;
 app.listen(PORT, () => {
   console.log(`Users service listening on port ${PORT}`);
 });
+
+module.exports = app;
