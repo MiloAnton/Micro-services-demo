@@ -9,6 +9,7 @@
     "start-books": "node books/books.service.js",
     "start-reviews": "node reviews/reviews.service.js",
     "start-users": "node users/users.service.js",
+    "start-authentification": "node authentication/authentication.service.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",

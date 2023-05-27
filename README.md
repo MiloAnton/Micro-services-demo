@@ -6,6 +6,7 @@ Ce projet est un projet de micro-services. Il est composé de 6 micro-services q
 - Categories
 - Reviews
 - Users
+- Authentification
 Chacun de ces micro-services est un CRUD qui permet de gérer les données de la base de données.
 Chacun d'entre eux comprend ces fonctionnalités : 
 - Pagination
@@ -65,4 +66,15 @@ npm run test
 ### Run
 ```bash
 npm run start-users
+```
+## Authentification
+CRUD > Port 8000
+### Test
+```bash
+cd authentification
+npm run test
+```
+### Run
+```bash
+npm run start-authentification
 ```
