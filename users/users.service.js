@@ -126,6 +126,21 @@ app.delete("/users/:id", (req, res) => {
   });
 });
 
+app.get("/users", (req, res) => {
+    const limit = req.query.limit ? parseInt(req.query.limit) : 10;
+    const offset = req.query.offset ? parseInt(req.query.offset) : 0;
+    const search = req.query.search || '';
+  
+    db.all("SELECT * FROM users WHERE name LIKE ? OR email LIKE ? LIMIT ? OFFSET ?", [`%${search}%`, `%${search}%`, limit, offset], (err, rows) => {
+      if (err) {
+        res.status(500).send(err);
+      } else {
+        res.json(rows);
+      }
+    });
+  });
+  
+
 const PORT = process.env.PORT || 7000;
 app.listen(PORT, () => {
   console.log(`Users service listening on port ${PORT}`);

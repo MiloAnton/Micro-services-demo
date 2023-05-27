@@ -209,6 +209,21 @@ app.get("/reviews/user/:userId", (req, res) => {
   );
 });
 
+app.get("/reviews", (req, res) => {
+    const limit = req.query.limit ? parseInt(req.query.limit) : 10;
+    const offset = req.query.offset ? parseInt(req.query.offset) : 0;
+    const search = req.query.search || '';
+  
+    db.all("SELECT * FROM reviews WHERE comment LIKE ? LIMIT ? OFFSET ?", [`%${search}%`, limit, offset], (err, rows) => {
+      if (err) {
+        res.status(500).send(err);
+      } else {
+        res.json(rows);
+      }
+    });
+  });
+  
+
 const PORT = process.env.PORT || 6000;
 app.listen(PORT, () => {
   console.log(`Reviews service listening on port ${PORT}`);

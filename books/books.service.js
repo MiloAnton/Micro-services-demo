@@ -174,6 +174,21 @@ app.get("/books/category/:categoryId", (req, res) => {
   );
 });
 
+app.get("/books", (req, res) => {
+    const limit = req.query.limit ? parseInt(req.query.limit) : 10;
+    const offset = req.query.offset ? parseInt(req.query.offset) : 0;
+    const search = req.query.search || '';
+  
+    db.all("SELECT * FROM books WHERE title LIKE ? LIMIT ? OFFSET ?", [`%${search}%`, limit, offset], (err, rows) => {
+      if (err) {
+        res.status(500).send(err);
+      } else {
+        res.json(rows);
+      }
+    });
+  });
+  
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Books service listening on port ${PORT}`);
