@@ -49,25 +49,39 @@ let db = new sqlite3.Database("./authors.db", (err) => {
 });
 
 app.get("/authors", (req, res) => {
-  db.all("SELECT * FROM authors", [], (err, rows) => {
-    if (err) {
-      res.status(500).send(err);
-    } else {
-      res.json(rows);
+  const limit = req.query.limit ? parseInt(req.query.limit) : 10;
+  const offset = req.query.offset ? parseInt(req.query.offset) : 0;
+
+  db.all(
+    "SELECT * FROM authors LIMIT ? OFFSET ?",
+    [limit, offset],
+    (err, rows) => {
+      if (err) {
+        res.status(500).send(err);
+      } else {
+        res.json(rows);
+      }
     }
-  });
+  );
 });
 
 app.get("/authors/:id", (req, res) => {
-  db.get("SELECT * FROM authors WHERE id = ?", [req.params.id], (err, row) => {
-    if (err) {
-      res.status(500).send(err);
-    } else if (!row) {
-      res.status(404).send("Author not found");
-    } else {
-      res.json(row);
+  const limit = req.query.limit ? parseInt(req.query.limit) : 1;
+  const offset = req.query.offset ? parseInt(req.query.offset) : 0;
+
+  db.all(
+    "SELECT * FROM authors WHERE id = ? LIMIT ? OFFSET ?",
+    [req.params.id, limit, offset],
+    (err, row) => {
+      if (err) {
+        res.status(500).send(err);
+      } else if (!row) {
+        res.status(404).send("Author not found");
+      } else {
+        res.json(row);
+      }
     }
-  });
+  );
 });
 
 app.post("/authors", (req, res) => {

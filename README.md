@@ -1,4 +1,16 @@
-# Micro-services TP
+# Micro-services
+## Description générale
+Ce projet est un projet de micro-services. Il est composé de 6 micro-services qui sont :
+- Books
+- Authors
+- Categories
+- Reviews
+- Users
+Chacun de ces micro-services est un CRUD qui permet de gérer les données de la base de données.
+Chacun d'entre eux comprend ces fonctionnalités : 
+- Pagination
+- Tests unitaires
+- Recherche
 ## Books
 CRUD > Port 3000
 ### Test

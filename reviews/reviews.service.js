@@ -6,7 +6,6 @@ const app = express();
 
 app.use(bodyParser.json());
 
-// Création de la base de données et de la table reviews
 let db = new sqlite3.Database("./reviews.db", (err) => {
   if (err) {
     console.error(err.message);
@@ -27,7 +26,6 @@ let db = new sqlite3.Database("./reviews.db", (err) => {
       }
       console.log("Reviews table created.");
 
-      // Insertion de quelques critiques pour tester
       const reviews = [
         {
           bookId: 1,
@@ -73,25 +71,39 @@ let db = new sqlite3.Database("./reviews.db", (err) => {
 });
 
 app.get("/reviews", (req, res) => {
-  db.all("SELECT * FROM reviews", [], (err, rows) => {
-    if (err) {
-      res.status(500).send(err);
-    } else {
-      res.json(rows);
+  const limit = req.query.limit ? parseInt(req.query.limit) : 10;
+  const offset = req.query.offset ? parseInt(req.query.offset) : 0;
+
+  db.all(
+    "SELECT * FROM reviews LIMIT ? OFFSET ?",
+    [limit, offset],
+    (err, rows) => {
+      if (err) {
+        res.status(500).send(err);
+      } else {
+        res.json(rows);
+      }
     }
-  });
+  );
 });
 
 app.get("/reviews/:id", (req, res) => {
-  db.get("SELECT * FROM reviews WHERE id = ?", [req.params.id], (err, row) => {
-    if (err) {
-      res.status(500).send(err);
-    } else if (!row) {
-      res.status(404).send("Review not found");
-    } else {
-      res.json(row);
+  const limit = req.query.limit ? parseInt(req.query.limit) : 1;
+  const offset = req.query.offset ? parseInt(req.query.offset) : 0;
+
+  db.all(
+    "SELECT * FROM reviews WHERE id = ? LIMIT ? OFFSET ?",
+    [req.params.id, limit, offset],
+    (err, row) => {
+      if (err) {
+        res.status(500).send(err);
+      } else if (!row) {
+        res.status(404).send("Review not found");
+      } else {
+        res.json(row);
+      }
     }
-  });
+  );
 });
 
 app.post("/reviews", (req, res) => {
@@ -140,11 +152,13 @@ app.delete("/reviews/:id", (req, res) => {
   });
 });
 
-// Récupérer toutes les critiques pour un livre spécifique
 app.get("/reviews/book/:bookId", (req, res) => {
+  const limit = req.query.limit ? parseInt(req.query.limit) : 10;
+  const offset = req.query.offset ? parseInt(req.query.offset) : 0;
+
   db.all(
-    "SELECT * FROM reviews WHERE bookId = ?",
-    [req.params.bookId],
+    "SELECT * FROM reviews WHERE bookId = ? LIMIT ? OFFSET ?",
+    [req.params.bookId, limit, offset],
     (err, rows) => {
       if (err) {
         res.status(500).send(err);
@@ -157,11 +171,13 @@ app.get("/reviews/book/:bookId", (req, res) => {
   );
 });
 
-// Récupérer toutes les critiques avec une note spécifique
 app.get("/reviews/rating/:rating", (req, res) => {
+  const limit = req.query.limit ? parseInt(req.query.limit) : 10;
+  const offset = req.query.offset ? parseInt(req.query.offset) : 0;
+
   db.all(
-    "SELECT * FROM reviews WHERE rating = ?",
-    [req.params.rating],
+    "SELECT * FROM reviews WHERE rating = ? LIMIT ? OFFSET ?",
+    [req.params.rating, limit, offset],
     (err, rows) => {
       if (err) {
         res.status(500).send(err);
@@ -174,11 +190,13 @@ app.get("/reviews/rating/:rating", (req, res) => {
   );
 });
 
-// Récupérer toutes les critiques d'un utilisateur spécifique
 app.get("/reviews/user/:userId", (req, res) => {
+  const limit = req.query.limit ? parseInt(req.query.limit) : 10;
+  const offset = req.query.offset ? parseInt(req.query.offset) : 0;
+
   db.all(
-    "SELECT * FROM reviews WHERE userId = ?",
-    [req.params.userId],
+    "SELECT * FROM reviews WHERE userId = ? LIMIT ? OFFSET ?",
+    [req.params.userId, limit, offset],
     (err, rows) => {
       if (err) {
         res.status(500).send(err);

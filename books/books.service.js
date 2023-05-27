@@ -55,25 +55,39 @@ let db = new sqlite3.Database("./books.db", (err) => {
 });
 
 app.get("/books", (req, res) => {
-  db.all("SELECT * FROM books", [], (err, rows) => {
-    if (err) {
-      res.status(500).send(err);
-    } else {
-      res.json(rows);
+  const limit = req.query.limit ? parseInt(req.query.limit) : 10;
+  const offset = req.query.offset ? parseInt(req.query.offset) : 0;
+
+  db.all(
+    "SELECT * FROM books LIMIT ? OFFSET ?",
+    [limit, offset],
+    (err, rows) => {
+      if (err) {
+        res.status(500).send(err);
+      } else {
+        res.json(rows);
+      }
     }
-  });
+  );
 });
 
 app.get("/books/:id", (req, res) => {
-  db.get("SELECT * FROM books WHERE id = ?", [req.params.id], (err, row) => {
-    if (err) {
-      res.status(500).send(err);
-    } else if (!row) {
-      res.status(404).send("Book not found");
-    } else {
-      res.json(row);
+  const limit = req.query.limit ? parseInt(req.query.limit) : 1;
+  const offset = req.query.offset ? parseInt(req.query.offset) : 0;
+
+  db.all(
+    "SELECT * FROM books WHERE id = ? LIMIT ? OFFSET ?",
+    [req.params.id, limit, offset],
+    (err, row) => {
+      if (err) {
+        res.status(500).send(err);
+      } else if (!row) {
+        res.status(404).send("Book not found");
+      } else {
+        res.json(row);
+      }
     }
-  });
+  );
 });
 
 app.post("/books", (req, res) => {
@@ -122,9 +136,12 @@ app.delete("/books/:id", (req, res) => {
 
 // Récupérer tous les livres d'un auteur spécifique
 app.get("/books/author/:authorId", (req, res) => {
+  const limit = req.query.limit ? parseInt(req.query.limit) : 10;
+  const offset = req.query.offset ? parseInt(req.query.offset) : 0;
+
   db.all(
-    "SELECT * FROM books WHERE authorId = ?",
-    [req.params.authorId],
+    "SELECT * FROM books WHERE authorId = ? LIMIT ? OFFSET ?",
+    [req.params.authorId, limit, offset],
     (err, rows) => {
       if (err) {
         res.status(500).send(err);
@@ -139,9 +156,12 @@ app.get("/books/author/:authorId", (req, res) => {
 
 // Récupérer tous les livres d'une catégorie spécifique
 app.get("/books/category/:categoryId", (req, res) => {
+  const limit = req.query.limit ? parseInt(req.query.limit) : 10;
+  const offset = req.query.offset ? parseInt(req.query.offset) : 0;
+
   db.all(
-    "SELECT * FROM books WHERE categoryId = ?",
-    [req.params.categoryId],
+    "SELECT * FROM books WHERE categoryId = ? LIMIT ? OFFSET ?",
+    [req.params.categoryId, limit, offset],
     (err, rows) => {
       if (err) {
         res.status(500).send(err);

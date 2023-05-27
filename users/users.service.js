@@ -47,25 +47,39 @@ let db = new sqlite3.Database("./users.db", (err) => {
 });
 
 app.get("/users", (req, res) => {
-  db.all("SELECT * FROM users", [], (err, rows) => {
-    if (err) {
-      res.status(500).send(err);
-    } else {
-      res.json(rows);
+  const limit = req.query.limit ? parseInt(req.query.limit) : 10;
+  const offset = req.query.offset ? parseInt(req.query.offset) : 0;
+
+  db.all(
+    "SELECT * FROM users LIMIT ? OFFSET ?",
+    [limit, offset],
+    (err, rows) => {
+      if (err) {
+        res.status(500).send(err);
+      } else {
+        res.json(rows);
+      }
     }
-  });
+  );
 });
 
 app.get("/users/:id", (req, res) => {
-  db.get("SELECT * FROM users WHERE id = ?", [req.params.id], (err, row) => {
-    if (err) {
-      res.status(500).send(err);
-    } else if (!row) {
-      res.status(404).send("User not found");
-    } else {
-      res.json(row);
+  const limit = req.query.limit ? parseInt(req.query.limit) : 1;
+  const offset = req.query.offset ? parseInt(req.query.offset) : 0;
+
+  db.all(
+    "SELECT * FROM users WHERE id = ? LIMIT ? OFFSET ?",
+    [req.params.id, limit, offset],
+    (err, row) => {
+      if (err) {
+        res.status(500).send(err);
+      } else if (!row) {
+        res.status(404).send("User not found");
+      } else {
+        res.json(row);
+      }
     }
-  });
+  );
 });
 
 app.post("/users", (req, res) => {

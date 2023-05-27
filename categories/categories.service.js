@@ -6,7 +6,6 @@ const app = express();
 
 app.use(bodyParser.json());
 
-// Création de la base de données et de la table categories
 let db = new sqlite3.Database("./categories.db", (err) => {
   if (err) {
     console.error(err.message);
@@ -24,7 +23,6 @@ let db = new sqlite3.Database("./categories.db", (err) => {
       }
       console.log("Categories table created.");
 
-      // Insertion de quelques catégories pour tester
       const categories = [
         { name: "Fiction" },
         { name: "Non-fiction" },
@@ -51,19 +49,29 @@ let db = new sqlite3.Database("./categories.db", (err) => {
 });
 
 app.get("/categories", (req, res) => {
-  db.all("SELECT * FROM categories", [], (err, rows) => {
-    if (err) {
-      res.status(500).send(err);
-    } else {
-      res.json(rows);
+  const limit = req.query.limit ? parseInt(req.query.limit) : 10;
+  const offset = req.query.offset ? parseInt(req.query.offset) : 0;
+
+  db.all(
+    "SELECT * FROM categories LIMIT ? OFFSET ?",
+    [limit, offset],
+    (err, rows) => {
+      if (err) {
+        res.status(500).send(err);
+      } else {
+        res.json(rows);
+      }
     }
-  });
+  );
 });
 
 app.get("/categories/:id", (req, res) => {
-  db.get(
-    "SELECT * FROM categories WHERE id = ?",
-    [req.params.id],
+  const limit = req.query.limit ? parseInt(req.query.limit) : 1;
+  const offset = req.query.offset ? parseInt(req.query.offset) : 0;
+
+  db.all(
+    "SELECT * FROM categories WHERE id = ? LIMIT ? OFFSET ?",
+    [req.params.id, limit, offset],
     (err, row) => {
       if (err) {
         res.status(500).send(err);
