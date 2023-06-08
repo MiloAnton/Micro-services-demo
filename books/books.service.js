@@ -54,6 +54,10 @@ let db = new sqlite3.Database("./books.db", (err) => {
   );
 });
 
+app.get("/", (req, res) => {
+  res.json({ message: "This is the books service. Service is running." });
+});
+
 app.get("/books", (req, res) => {
   const limit = req.query.limit ? parseInt(req.query.limit) : 10;
   const offset = req.query.offset ? parseInt(req.query.offset) : 0;

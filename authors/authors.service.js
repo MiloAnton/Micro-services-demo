@@ -48,6 +48,10 @@ let db = new sqlite3.Database("./authors.db", (err) => {
   );
 });
 
+app.get("/", (req, res) => {
+  res.json({ message: "This is the authors service. Service is running." });
+});
+
 app.get("/authors", (req, res) => {
   const limit = req.query.limit ? parseInt(req.query.limit) : 10;
   const offset = req.query.offset ? parseInt(req.query.offset) : 0;

@@ -15,6 +15,10 @@ let db = new sqlite3.Database("./../users/users.db", (err) => {
   console.log("Connected to the users database.");
 });
 
+app.get("/", (req, res) => {
+  res.json({ message: "This is the authentication service. Service is running." });
+});
+
 app.post("/register", async (req, res) => {
   const { name, email, password } = req.body;
   const hashedPassword = await bcrypt.hash(password, 10);
