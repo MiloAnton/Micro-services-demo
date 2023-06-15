@@ -1,21 +1,23 @@
 {
-  "name": "authors",
+  "name": "books",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon authors.service.js",
-    "test": "mocha authors.test.js"
+    "start": "node books.service.js",
+    "test": "mocha books.test.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "axios": "^1.4.0",
     "body-parser": "^1.20.2",
-    "chai": "^4.3.7",
     "express": "^4.18.2",
+    "sqlite3": "^5.1.6"
+  },
+  "devDependencies": {
+    "chai": "^4.3.7",
     "mocha": "^10.2.0",
-    "sqlite3": "^5.1.6",
     "supertest": "^6.3.3"
   }
 }
