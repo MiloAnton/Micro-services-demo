@@ -48,6 +48,12 @@ let db = new sqlite3.Database("./authors.db", (err) => {
   );
 });
 
+app.post("/events", (req, res) => {
+  const event = req.body;
+  console.log("Received event:", event);
+  res.send({ status: 'OK' });
+});
+
 app.get("/", (req, res) => {
   res.json({ message: "This is the authors service. Service is running." });
 });

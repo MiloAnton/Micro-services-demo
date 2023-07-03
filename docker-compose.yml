@@ -54,6 +54,14 @@ services:
       - users-db:/var/lib/users-service
     command: npm start
 
+  event-bus-service:
+    build: ./event-bus
+    volumes:
+      - ./event-bus:/app
+    command: npm start
+    ports:
+      - 9000:9000
+
 volumes:
   authors-db:
   books-db:

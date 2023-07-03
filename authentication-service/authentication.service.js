@@ -15,6 +15,12 @@ let db = new sqlite3.Database("./../users/users.db", (err) => {
   console.log("Connected to the users database.");
 });
 
+app.post("/events", (req, res) => {
+  const event = req.body;
+  console.log("Received event:", event);
+  res.send({ status: 'OK' });
+});
+
 app.get("/", (req, res) => {
   res.json({ message: "This is the authentication service. Service is running." });
 });
